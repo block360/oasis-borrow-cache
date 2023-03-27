@@ -1,0 +1,9 @@
+node_modules
+lib
+yarn-error.log
+.env.*
+tsconfig.tsbuildinfo
+.build-cache
+.vscode
+.idea
+.DS_Store

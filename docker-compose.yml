@@ -1,0 +1,56 @@
+version: "3.2"
+services:
+  # Building Image
+
+  # Setting up DB
+  CACHE_DB:
+    image: postgres:10.6
+    container_name: cache_db
+    environment:
+      - POSTGRES_USER=user
+      - POSTGRES_PASSWORD=pass
+      - POSTGRES_HOST=gsu_cache_network
+      - POSTGRES_PORT=5432
+      - POSTGRES_DB=db
+    ports:
+      - "7863:5432"
+    networks:
+      - gsu_cache_network
+    restart: unless-stopped
+
+  # Setting up ETL service
+  CACHE_ETL:
+    container_name: cache_etl
+    image: gsuprotocol-cache
+    env_file:
+      - .env
+    restart: unless-stopped
+    command: bash -c "yarn migrate && yarn start-etl"
+    network_mode: host
+    # networks:
+      # - gsu_cache_network
+    depends_on:
+      - CACHE_DB
+
+  # Setting up API service
+  CACHE_API:
+    container_name: cache_api
+    image: gsuprotocol-cache
+    command: bash -c "yarn start-api"
+    expose:
+      - 3001
+    # ports:
+      # - "3001:3001"
+    network_mode: host
+    env_file:
+      - .env
+    restart: unless-stopped
+    # networks:
+      # - gsu_cache_network
+    depends_on:
+      - CACHE_ETL
+
+networks:
+  gsu_cache_network:
+      name: gsu_cache_network
+      driver: bridge
